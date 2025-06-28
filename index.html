@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Lindóva Vida</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1872a6, #136393);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            height: 100vh;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #71d2f6;
+            margin-bottom: 12px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .logo span {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #10395e;
+        }
+        .logo .vida {
+            color: #71d2f6;
+            font-style: italic;
+            font-size: 1.2rem;
+            margin-left: 5px;
+        }
+        .section {
+            display: none;
+            flex: 1;
+        }
+        .section.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .progress-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .progress-label {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+        .progress-circle {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin-bottom: 15px;
+        }
+        .progress-bg, .progress-fg {
+            fill: none;
+            stroke-width: 12;
+        }
+        .progress-bg {
+            stroke: #0d4360;
+        }
+        .progress-fg {
+            stroke: #5fd5fa;
+            stroke-linecap: round;
+            stroke-dasharray: 377;
+            stroke-dashoffset: 377;
+            transition: stroke-dashoffset 0.8s ease;
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .volume-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .volume-buttons button {
+            background: #0d4360;
+            border: none;
+            color: #fff;
+            padding: 10px 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .volume-buttons button:hover, .volume-buttons button:active {
+            background: #5fd5fa;
+            color: #1872a6;
+            transform: scale(1.05);
+        }
+        .custom-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .custom-row input {
+            background: #0d4360;
+            border: 1px solid #164e73;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .custom-row input::placeholder {
+            color: #71d2f6;
+        }
+        .custom-row button {
+            background: #0d4360;
+            border: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .custom-row button:hover, .custom-row button:active {
+            background: #5fd5fa;
+            color: #1872a6;
+        }
+        .undo-btn {
+            background: #c0392b !important;
+        }
+        .undo-btn:hover, .undo-btn:active {
+            background: #e74c3c !important;
+        }
+        .chart-section {
+            background: #0d4360;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+        .chart-title {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #5fd5fa;
+        }
+        .chart {
+            width: 100%;
+            height: 60px;
+            background: #164e73;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .chart svg {
+            width: 100%;
+            height: 60px;
+        }
+        .chart-hours {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #71d2f6;
+            padding: 0 8px;
+        }
+        .feedback {
+            background: #0d4360;
+            border-radius: 8px;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9rem;
+            color: #5fd5fa;
+            font-weight: 500;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        .info-card {
+            background: #0d4360;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .info-card h3 {
+            color: #5fd5fa;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .info-card p {
+            line-height: 1.4;
+            margin-bottom: 8px;
+            color: #a0c0e0;
+            font-size: 0.9rem;
+        }
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: #164e73;
+            border-radius: 15px;
+            padding: 8px 0;
+            margin-top: auto;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #71d2f6;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 4px;
+        }
+        .nav-item.active {
+            color: #5fd5fa;
+            transform: scale(1.1);
+        }
+        .nav-item i {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+        .success-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            animation: popup 0.5s ease;
+            display: none;
+        }
+        @keyframes popup {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .history-list {
+            text-align: left;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .history-item {
+            background: #164e73;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span id="timeDisplay">São Paulo - 22°C 9:41</span>
+            <span>🔋 📶</span>
+        </div>
+        
+        <div class="logo">
+            <span>Lindóva</span><span class="vida">Vida</span>
+        </div>
+
+        <!-- Seção Início -->
+        <div class="section active" id="inicio">
+            <div class="progress-section">
+                <div class="progress-label">Hoje</div>
+                <div class="progress-circle">
+                    <svg width="130" height="130">
+                        <circle class="progress-bg" cx="65" cy="65" r="60"/>
+                        <circle class="progress-fg" id="progressCircle" cx="65" cy="65" r="60"/>
+                    </svg>
+                    <div class="progress-text" id="progressText">0%<br><span style="font-size:0.8rem;">da meta</span></div>
+                </div>
+            </div>
+            
+            <div class="volume-buttons">
+                <button onclick="addWater(200)">200ml</button>
+                <button onclick="addWater(300)">300ml</button>
+                <button onclick="addWater(500)">500ml</button>
+                <button onclick="addWater(1000)">1000ml</button>
+            </div>
+            
+            <div class="custom-row">
+                <input type="number" id="customAmount" placeholder="Outro (ml)" min="1" max="2000">
+                <button onclick="addCustom()">Add</button>
+                <button onclick="undoLast()" class="undo-btn">Desf</button>
+            </div>
+            
+            <div class="chart-section">
+                <div class="chart-title">Histórico por hora</div>
+                <div class="chart">
+                    <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#5fd5fa;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#5fd5fa;stop-opacity:0.2" />
+                            </linearGradient>
+                        </defs>
+                        <polyline id="chartLine" fill="none" stroke="#5fd5fa" stroke-width="3" 
+                                points="0,50 75,45 150,40 225,30 300,20"/>
+                        <polygon id="chartFill" fill="url(#gradient)"
+                                points="0,60 0,50 75,45 150,40 225,30 300,20 300,60"/>
+                    </svg>
+                </div>
+                <div class="chart-hours">
+                    <span>6</span>
+                    <span>12</span>
+                    <span>18</span>
+                    <span>24</span>
+                </div>
+            </div>
+            
+            <div class="feedback" id="feedback">Comece sua jornada de hidratação!</div>
+        </div>
+
+        <!-- Seção Histórico -->
+        <div class="section" id="historico">
+            <div class="info-card">
+                <h3>Histórico Detalhado</h3>
+                <p>Acompanhe todos os seus registros de hidratação do dia.</p>
+                <div class="history-list" id="historyList">
+                    <p style="color: #a0c0e0; text-align: center;">Nenhum registro ainda hoje.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção Últimos 7 Dias -->
+        <div class="section" id="ultimos7dias">
+            <div class="info-card">
+                <h3>Últimos 7 Dias</h3>
+                <p>Visão geral do seu progresso semanal.</p>
+                <div style="display: flex; justify-content: space-between; align-items: end; height: 100px; margin: 20px 0;">
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 60%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">D</span>
+                    </div>
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 80%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">S</span>
+                    </div>
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 45%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">T</span>
+                    </div>
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 90%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">Q</span>
+                    </div>
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 70%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">Q</span>
+                    </div>
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 85%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">S</span>
+                    </div>
+                    <div style="background: linear-gradient(to top, #5fd5fa, #71d2f6); width: 25px; height: 68%; border-radius: 4px 4px 0 0; position: relative;">
+                        <span style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 0.7rem;">H</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção Gamificação -->
+        <div class="section" id="gamificacao">
+            <div class="info-card">
+                <h3>Gamificação</h3>
+                <p>Acompanhe suas conquistas e desafios!</p>
+                <div style="background: #164e73; padding: 12px; margin: 10px 0; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 1.8rem;">🏆</div>
+                    <div style="flex: 1; font-size: 0.85rem;">
+                        <strong>Meta Diária</strong><br>
+                        Atingir 2000ml por dia
+                    </div>
+                    <div style="color: #5fd5fa; font-weight: bold;" id="dailyGoalStatus">0/2000ml</div>
+                </div>
+                <div style="background: #164e73; padding: 12px; margin: 10px 0; border-radius: 8px; display: flex; align-items: center; gap: 12px;">
+                    <div style="font-size: 1.8rem;">💧</div>
+                    <div style="flex: 1; font-size: 0.85rem;">
+                        <strong>Total Consumido</strong><br>
+                        Água bebida hoje
+                    </div>
+                    <div style="color: #5fd5fa; font-weight: bold;" id="totalConsumed">0ml</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showSection('inicio', this)">
+                <i>💧</i>
+                <span>Início</span>
+            </div>
+            <div class="nav-item" onclick="showSection('historico', this)">
+                <i>📊</i>
+                <span>Histórico</span>
+            </div>
+            <div class="nav-item" onclick="showSection('ultimos7dias', this)">
+                <i>📅</i>
+                <span>7 dias</span>
+            </div>
+            <div class="nav-item" onclick="showSection('gamificacao', this)">
+                <i>🏆</i>
+                <span>Prêmios</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-popup" id="successPopup">
+        🎉 Meta Alcançada!<br>
+        Parabéns pela disciplina!
+    </div>
+
+    <script>
+        let totalWater = 0;
+        let lastAmount = 0;
+        const dailyGoal = 2000;
+        let waterHistory = [];
+
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('timeDisplay').textContent = São Paulo - 22°C ${hours}:${minutes};
+        }
+
+        function addWater(amount) {
+            if (amount > 0) {
+                lastAmount = amount;
+                totalWater += amount;
+                
+                const now = new Date();
+                waterHistory.push({
+                    amount: amount,
+                    time: now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0')
+                });
+                
+                updateDisplay();
+                updateChart();
+                updateHistory();
+                updateGamification();
+                
+                if (totalWater >= dailyGoal) {
+                    showSuccess();
+                }
+            }
+        }
+
+        function addCustom() {
+            const input = document.getElementById('customAmount');
+            const amount = parseInt(input.value);
+            
+            if (amount > 0 && amount <= 2000) {
+                addWater(amount);
+                input.value = '';
+            } else {
+                alert('Digite um valor entre 1 e 2000ml');
+            }
+        }
+
+        function undoLast() {
+            if (lastAmount > 0) {
+                totalWater -= lastAmount;
+                if (totalWater < 0) totalWater = 0;
+                
+                if (waterHistory.length > 0) {
+                    waterHistory.pop();
+                }
+                
+                lastAmount = 0;
+                updateDisplay();
+                updateChart();
+                updateHistory();
+                updateGamification();
+            }
+        }
+
+        function updateDisplay() {
+            const percentage = Math.min((totalWater / dailyGoal) * 100, 100);
+            const circumference = 2 * Math.PI * 60;
+            const offset = circumference - (circumference * percentage / 100);
+            
+            document.getElementById('progressCircle').style.strokeDashoffset = offset;
+            document.getElementById('progressText').innerHTML = 
+                ${Math.round(percentage)}%<br><span style="font-size:0.8rem;">da meta</span>;
+            
+            updateFeedback(percentage);
+        }
+
+        function updateFeedback(percentage) {
+            const feedback = document.getElementById('feedback');
+            
+            if (percentage >= 100) {
+                feedback.innerHTML = '🎉 Meta alcançada! Continue hidratado!';
+                feedback.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            } else if (percentage >= 75) {
+                feedback.innerHTML = '🌟 Quase lá! Você está indo muito bem!';
+                feedback.style.background = '#0d4360';
+            } else if (percentage >= 50) {
+                feedback.innerHTML = '💪 Metade do caminho! Continue assim!';
+                feedback.style.background = '#0d4360';
+            } else if (percentage >= 25) {
+                feedback.innerHTML = '🚀 Bom começo! Vamos continuar!';
+                feedback.style.background = '#0d4360';
+            } else {
+                feedback.innerHTML = '💧 Comece sua jornada de hidratação!';
+                feedback.style.background = '#0d4360';
+            }
+        }
+
+        function updateChart() {
+            const currentHour = new Date().getHours();
+            const progress = Math.min((totalWater / dailyGoal) * 100, 100);
+            
+            let points = [];
+            for (let i = 0; i <= 300; i += 75) {
+                const hour = (i / 300) * 24;
+                let height = 50;
+                
+                if (hour <= currentHour) {
+                    height = 50 - (progress * 0.3 * (hour / Math.max(currentHour, 1)));
+                }
+                
+                points.push(${i},${Math.max(height, 10)});
+            }
+            
+            document.getElementById('chartLine').setAttribute('points', points.join(' '));
+            
+            const fillPoints = 0,60 ${points.join(' ')} 300,60;
+            document.getElementById('chartFill').setAttribute('points', fillPoints);
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (waterHistory.length === 0) {
+                historyList.innerHTML = '<p style="color: #a0c0e0; text-align: center;">Nenhum registro ainda hoje.</p>';
+            } else {
+                let html = '';
+                waterHistory.slice(-10).reverse().forEach((entry, index) => {
+                    html += `
+                        <div class="history-item">
+                            <span>${entry.time}</span>
+                            <span style="color: #5fd5fa; font-weight: bold;">${entry.amount}ml</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    <div style="background: #0d4360; padding: 10px; margin-top: 10px; border-radius: 6px; text-align: center; border: 1px solid #5fd5fa;">
+                        <strong style="color: #5fd5fa;">Total: ${totalWater}ml</strong><br>
+                        <small style="color: #a0c0e0;">${Math.round((totalWater/dailyGoal)*100)}% da meta</small>
+                    </div>
+                `;
+                
+                historyList.innerHTML = html;
+            }
+        }
+
+        function updateGamification() {
+            document.getElementById('dailyGoalStatus').textContent = ${totalWater}/${dailyGoal}ml;
+            document.getElementById('totalConsumed').textContent = ${totalWater}ml;
+        }
+
+        function showSuccess() {
+            const popup = document.getElementById('successPopup');
+            popup.style.display = 'block';
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        function showSection(sectionName, element) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.getElementById(sectionName).classList.add('active');
+            element.classList.add('active');
+        }
+
+        document.getElementById('customAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCustom();
+            }
+        });
+
+        // Inicialização
+        updateTime();
+        updateDisplay();
+        updateChart();
+        updateHistory();
+        updateGamification();
+        setInterval(updateTime, 60000);
+    </script>
+</body>
+</html>
