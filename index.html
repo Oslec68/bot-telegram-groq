@@ -1,42 +1,695 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Lindoya Vida</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-            background: linear-gradient(to bottom right, #00b4db, #0083b0);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-        }
-        header {
-            padding: 20px;
-        }
-        img.logo {
-            width: 180px;
-            margin-top: 40px;
-        }
-        main {
-            margin-top: 40px;
-            text-align: center;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visita Lojas GPA</title>
+<style>
+:root { --azul:#0a4daa; --azul2:#1976d2; --verde:#0a7a3c; }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:hidden;margin:0;padding:0}
+body{font:13px Arial,Helvetica;background:#f5f5f5;color:#111;min-height:100vh;display:flex;flex-direction:column}
+header{background:linear-gradient(90deg,var(--azul),var(--azul2));text-align:center;padding:6px 0 4px;position:relative;z-index:1000}
+.gpa-logo{display:inline-block;margin-bottom:2px;position:relative}
+.gpa-logo svg{filter:brightness(0) invert(1)}
+header h1{margin:2px 0 1px;font-size:14px;color:#fff}
+header small{font-size:9px;color:#fff}
+.weather-info{background:rgba(255,255,255,0.1);border-radius:4px;padding:3px 8px;margin:4px auto 0;max-width:300px;font-size:10px;color:#fff;display:none;align-items:center;justify-content:space-between;gap:12px}
+.weather-main{display:flex;align-items:center;gap:6px}
+.weather-temp{font-size:13px;font-weight:700}
+.weather-icon{font-size:14px}
+.weather-desc{font-size:10px;font-weight:600;text-align:right;line-height:1.1}
+form{flex:1;display:flex;flex-direction:column}
+section{background:#fff;margin:4px 6px;padding:6px;border-radius:8px;box-shadow:0 1px 2px #0001}
+label{display:block;font-size:10px;font-weight:700;margin-bottom:1px;color:#333}
+input,textarea{width:100%;padding:4px;font-size:12px;border:1px solid #c6c6c6;border-radius:6px;background:#fafafa;box-sizing:border-box}
+input[readonly]{background:#f0f0f0;color:#666}
+textarea{height:32px;resize:none;font-family:inherit}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end}
+.row > div{flex:1}
+.cod{flex:0 0 65px}
+.nome{flex:1}
+#metricasSec{max-height:0;overflow:hidden;transition:max-height .3s ease}
+#checklistItems{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.metrics-layout{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:2px;padding:6px;background-color:#f8f9fa;border-radius:6px}
+.metrics-form-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;min-width:220px}
+.pie-chart-container{width:120px;height:120px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pie-chart{width:80px;height:80px;border-radius:50%;background:conic-gradient(transparent 0%);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:#555;flex-shrink:0;box-shadow:0 0 4px rgba(0,0,0,0.1);transition:all 0.5s ease-in-out;margin-bottom:6px}
+.pie-chart-info{font-size:10px;line-height:1.3;text-align:center}
+.chart-legend{font-size:9px;line-height:1.3}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-color{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.chk-group{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:4px}
+.chk-group label{display:flex;align-items:center;gap:3px;font-size:10px;padding:2px}
+.chk-group input[type="checkbox"]{width:12px;height:12px;margin:0;flex-shrink:0}
+#badge,#metrics-badge{font-size:9px;background:rgba(255,255,255,0.3);padding:1px 4px;border-radius:4px}
+.chk-btn{width:100%;padding:5px;border-radius:6px;border:1px solid #c6c6c6;background:#f3f3f3;font-weight:700;font-size:10px;cursor:pointer}
+.chk-btn:active{background:#e0e0e0}
+footer{background:#fff;padding:6px;display:flex;gap:6px;box-shadow:0 -1px 4px #0001;margin-top:auto}
+footer button{flex:1;border:none;border-radius:6px;padding:8px;font-size:13px;font-weight:700;cursor:pointer}
+.limpar{background:#999;color:#fff}
+.limpar:active{background:#777}
+.finalizar{background:var(--verde);color:#fff}
+.finalizar:active{background:#087a32;transform:scale(0.98)}
+.finalizar:disabled{background:#666!important;cursor:not-allowed!important;transform:none!important}
+#status{text-align:center;font-size:9px;font-weight:700;margin:1px 0;height:8px;color:var(--verde)}
+input[type="file"]{padding:2px;font-size:10px}
+</style>
 </head>
 <body>
-    <header>
-        <img src="logo_lindoya_vida.png" alt="Logo Lindoya Vida" class="logo">
-    </header>
-    <main>
-        <h1>Bem-vindo ao App de Hidratação</h1>
-        <p>Seu bem-estar começa com um gole de água!</p>
-    </main>
-</body>
-</html>
 
+<header>
+  <div class="gpa-logo">
+    <svg width="60" height="20" viewBox="0 0 200 70" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ondas características do GPA -->
+      <path d="M0 30 Q25 5, 50 30 Q75 55, 100 30" stroke="#fff" stroke-width="4" fill="none"/>
+      <path d="M20 40 Q45 15, 70 40 Q95 65, 120 40" stroke="#fff" stroke-width="4" fill="none"/>
+      <!-- Texto GPA -->
+      <text x="100" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#fff">GPA</text>
+    </svg>
+  </div>
+  <h1>Visita Lojas GPA</h1>
+  <small id="clock"></small>
+  <div class="weather-info" id="weather">
+    <div class="weather-main">
+      <span class="weather-icon" id="weather-emoji">🌤️</span>
+      <span class="weather-temp" id="temp">--°C</span>
+    </div>
+    <div class="weather-desc" id="weather-desc">Carregando...</div>
+    <img id="weather-icon" src="" alt="" style="display:none">
+  </div>
+</header>
+
+<form id="f" onsubmit="event.preventDefault();send()">
+<section>
+  <div class="row">
+    <div class="cod">
+      <label>Código</label>
+      <input id="cod" maxlength="4" oninput="fill()">
+    </div>
+    <div class="nome">
+      <label>Nome da Loja</label>
+      <input id="nome" readonly>
+    </div>
+  </div>
+  <div style="margin-top:4px">
+    <label>Cidade</label>
+    <div style="display:flex;align-items:center;gap:4px">
+      <input id="cid" readonly style="flex:1">
+      <span id="traffic-btn" style="font-size:14px;cursor:pointer;display:none" onclick="abrirTransito()" title="Ver trânsito da cidade">🚗</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="row">
+    <div><label>Gerente</label><input id="gerente"></div>
+    <div><label>WhatsApp</label><input id="whats"></div>
+  </div>
+</section>
+
+<section>
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:1">
+      <label>Usuário</label>
+      <input id="usuario">
+    </div>
+    <div style="flex:0 0 110px">
+      <label style="visibility:hidden">_</label>
+      <button type="button" class="chk-btn" onclick="toggleMetricas()">📊 Métricas <span id="metrics-badge">(0)</span></button>
+    </div>
+  </div>
+</section>
+
+<div id="metricasSec">
+  <section>
+    <div class="metrics-layout">
+      <div class="metrics-form-fields">
+        <div>
+          <label>💰 Venda Mensal (R$)</label>
+          <input type="tel" id="vendaMensal" placeholder="0" onblur="formatCurrency(this); updateMetrics()">
+        </div>
+        <div>
+          <label>📈 Variação Vnd (%)</label>
+          <input type="number" id="variacaoVnd" placeholder="0" oninput="updateMetrics()">
+        </div>
+        <div>
+          <label>📉 Perda da Loja (R$)</label>
+          <input type="tel" id="perdaLoja" placeholder="0" onblur="formatCurrency(this); updateMetrics()">
+        </div>
+        <div>
+          <label>🚫 Ruptura (%)</label>
+          <input type="number" id="ruptura" placeholder="0" max="100" oninput="updateMetrics()">
+        </div>
+      </div>
+      <div class="pie-chart-container">
+        <div class="pie-chart" id="pieChart">
+          <div class="pie-chart-info">
+            <div>Venda:</div>
+            <div id="totalVenda">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="chart-legend" id="chartLegend">
+          <div class="legend-item"><span class="legend-color" style="background-color: #f44336;"></span> Perda</div>
+          <div class="legend-item"><span class="legend-color" style="background-color: #ff9800;"></span> Ruptura</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section>
+  <div style="margin-bottom:6px">
+    <button type="button" class="chk-btn" onclick="toggle()">📋 Checklist <span id="badge">(0)</span></button>
+  </div>
+  <div id="checklistItems">
+    <div class="chk-group" id="lista">
+      <label><input type="checkbox" value="Ruptura" onchange="badge()">Ruptura</label>
+      <label><input type="checkbox" value="Preço errado" onchange="badge()">Preço errado</label>
+      <label><input type="checkbox" value="Layout inadequado" onchange="badge()">Layout inadequado</label>
+      <label><input type="checkbox" value="Limpeza" onchange="badge()">Limpeza</label>
+    </div>
+    <div class="row">
+      <input id="novo" placeholder="Outro item">
+      <button type="button" class="chk-btn" style="flex:0 0 50px" onclick="add()">+Add</button>
+    </div>
+  </div>
+</section>
+
+<section>
+  <label>Observações</label>
+  <textarea id="obs" placeholder="🎤 Use o microfone do teclado"></textarea>
+</section>
+
+<section>
+  <label>Fotos</label>
+  <div style="display:flex;gap:4px;align-items:center">
+    <input type="file" id="fotos" accept="image/*" multiple style="flex:1">
+    <button type="button" onclick="abrirCamera()" style="flex:0 0 70px;padding:4px;background:#007bff;color:white;border:none;border-radius:4px;font-size:10px">📷 Câmera</button>
+  </div>
+</section>
+
+<div id="status"></div>
+
+<footer>
+  <button type="button" class="limpar" onclick="limparFormulario()">Limpar</button>
+  <button class="finalizar" onclick="send()">Finalizar</button>
+</footer>
+
+<script>
+// Banco de dados de lojas
+const lojas = {
+  "0001": {"nome": "PA JARDIM PAULISTA", "cidade": "SAO PAULO"},
+  "0003": {"nome": "PA NOVA ALIANCA", "cidade": "RIBEIRAO PRETO"},
+  "0004": {"nome": "PA ANALIA FRANCO", "cidade": "SAO PAULO"},
+  "0014": {"nome": "PA SOROCABA A B VIST", "cidade": "SOROCABA"},
+  "0018": {"nome": "PA SANTOS CENTRO", "cidade": "SANTOS"},
+  "0022": {"nome": "PA VALINHOS PORTAL", "cidade": "VALINHOS"},
+  "0026": {"nome": "PA CAMPINAS CASTELO", "cidade": "CAMPINAS"},
+  "0037": {"nome": "PA CAMPINAS CAMBUI", "cidade": "CAMPINAS"},
+  "0044": {"nome": "EX SANTOS MACUCO", "cidade": "SANTOS"},
+  "0052": {"nome": "PA GUARUJA PUGLISI", "cidade": "GUARUJA"},
+  "0069": {"nome": "EX P. G. CENTRO", "cidade": "PRAIA GRANDE"},
+  "0122": {"nome": "PA ARACATUBA", "cidade": "ARACATUBA"},
+  "0186": {"nome": "PA TAUBATE INDEP", "cidade": "TAUBATE"},
+  "0189": {"nome": "PA CAMPINAS PROENCA", "cidade": "CAMPINAS"},
+  "0205": {"nome": "PA S.VICENTE ITARARE", "cidade": "SAO VICENTE"},
+  "0334": {"nome": "HUB FRESH - 0018", "cidade": "SANTOS"},
+  "0361": {"nome": "PA AQUARIUS", "cidade": "SAO JOSE DOS CAMPOS"},
+  "0412": {"nome": "PA HIPICA", "cidade": "CAMPINAS"},
+  "0465": {"nome": "PA JUNDIAI", "cidade": "JUNDIAI"},
+  "0505": {"nome": "PA CAMPINAS MANSOES", "cidade": "CAMPINAS"},
+  "0506": {"nome": "PA ITU CENTRO II", "cidade": "ITU"},
+  "0507": {"nome": "PA SALTO GETULIO VAR", "cidade": "SALTO"},
+  "0508": {"nome": "PA ATIBAIA", "cidade": "ATIBAIA"},
+  "0660": {"nome": "PA SOROCABA CAMPOLIM", "cidade": "SOROCABA"},
+  "0692": {"nome": "EX SANTOS PEDREIRA", "cidade": "SANTOS"},
+  "0745": {"nome": "PA PRAIA GRD C FORTE", "cidade": "PRAIA GRANDE"},
+  "1002": {"nome": "PA ITU CENTRO", "cidade": "ITU"},
+  "1005": {"nome": "PA PERUIBE", "cidade": "PERUIBE"},
+  "1021": {"nome": "PA RIB PRETO INDEPEN", "cidade": "RIBEIRAO PRETO"},
+  "1175": {"nome": "PA S.J.C. SHOPPING", "cidade": "SAO JOSE DOS CAMPOS"},
+  "1182": {"nome": "PA ARARAQUARA SHOPP", "cidade": "ARARAQUARA"},
+  "1185": {"nome": "VINHEDO", "cidade": "VINHEDO"},
+  "1191": {"nome": "PA PRES PRUDENTE", "cidade": "PRESIDENTE PRUDENTE"},
+  "1200": {"nome": "PA ASSIS", "cidade": "ASSIS"},
+  "1293": {"nome": "PA BARAO GERALDO", "cidade": "CAMPINAS"},
+  "1312": {"nome": "PA SAO CARLOS", "cidade": "SAO CARLOS"},
+  "1386": {"nome": "PA JUNDIAI CENTRO", "cidade": "JUNDIAI"},
+  "1499": {"nome": "EX P. G. FORTE", "cidade": "PRAIA GRANDE"},
+  "1609": {"nome": "PA AVARE", "cidade": "AVARE"},
+  "1724": {"nome": "PA RIBEIRAO PRETO JD", "cidade": "RIBEIRAO PRETO"},
+  "1739": {"nome": "PA ATIBAIA JARDIM", "cidade": "ATIBAIA"},
+  "1745": {"nome": "EX SANTOS APARECIDA", "cidade": "SANTOS"},
+  "1748": {"nome": "EX MONGAGUA", "cidade": "MONGAGUA"},
+  "1750": {"nome": "EX SANTOS VILA NOV", "cidade": "SANTOS"},
+  "1751": {"nome": "PA PERUIBE CENTRO", "cidade": "PERUIBE"},
+  "1753": {"nome": "PA PRAIA GRD BOQUIA", "cidade": "PRAIA GRANDE"},
+  "1758": {"nome": "PA SANTOS BARTOLOMEU", "cidade": "SANTOS"},
+  "1774": {"nome": "PA SAO SEBASTIAO", "cidade": "SAO SEBASTIAO"},
+  "1875": {"nome": "EX GUARUJA JARDIM", "cidade": "GUARUJA"},
+  "1878": {"nome": "PA CAMPINAS SOUZA", "cidade": "CAMPINAS"},
+  "2050": {"nome": "PA RIVIERA SHOPPING", "cidade": "BERTIOGA"},
+  "2078": {"nome": "PA ITANHAEM", "cidade": "ITANHAEM"},
+  "2329": {"nome": "PA PIRACICABA", "cidade": "PIRACICABA"},
+  "2333": {"nome": "PA TAUBATE VILA SAO", "cidade": "TAUBATE"},
+  "2354": {"nome": "PA GUARUJA TEJEREBA", "cidade": "GUARUJA"},
+  "2373": {"nome": "PA PARQUE PRADO", "cidade": "CAMPINAS"},
+  "2402": {"nome": "PA S J DO RIO PRETO", "cidade": "SAO JOSE RIO PRETO"},
+  "2424": {"nome": "PA S.J.R.P. JOCKEY", "cidade": "SAO JOSE DO RIO PRET"},
+  "2432": {"nome": "PA GUARUJA PITANGU", "cidade": "GUARUJA"},
+  "2438": {"nome": "PA JOSE MENINO", "cidade": "SANTOS"},
+  "2449": {"nome": "PA BAURU JD. ESTORIL", "cidade": "BAURU"},
+  "2465": {"nome": "PA CAMPINAS ITAPURA", "cidade": "CAMPINAS"},
+  "2474": {"nome": "PA MARILIA", "cidade": "MARILIA"},
+  "2481": {"nome": "PA BOTUCATU", "cidade": "BOTUCATU"},
+  "5171": {"nome": "PA LIMEIRA JD PARQUE", "cidade": "LIMEIRA"},
+  "5659": {"nome": "BARATEIRO LEME", "cidade": "LEME"},
+  "5679": {"nome": "COMPRE BEM GUARUJA", "cidade": "GUARUJA"},
+  "5680": {"nome": "COMPRE BEM SANTOS", "cidade": "SANTOS"},
+  "5682": {"nome": "EX GUARUJA JOAO PES", "cidade": "GUARUJA"},
+  "5683": {"nome": "BARATEIRO BEBEDOURO", "cidade": "BEBEDOURO"},
+  "6767": {"nome": "PA PIRACICABA PAULIS", "cidade": "PIRACICABA"},
+  "8666": {"nome": "PA RIBEIRAO PRETO", "cidade": "RIBEIRAO PRETO"}
+};
+
+// Funções para o Clima
+async function updateWeatherForCity(cidade) {
+  const weatherDiv = document.getElementById('weather');
+  const tempSpan = document.getElementById('temp');
+  const descDiv = document.getElementById('weather-desc');
+  const iconImg = document.getElementById('weather-icon');
+
+  try {
+    // Mostra carregando
+    tempSpan.textContent = '--°C';
+    descDiv.textContent = 'Carregando...';
+    weatherDiv.style.display = 'flex';
+    
+    // Converte nome da cidade
+    const cidadeFormatada = formatCityName(cidade);
+    
+    // Usa API gratuita wttr.in
+    const response = await fetch(https://wttr.in/${encodeURIComponent(cidadeFormatada)}?format=%C+%t+%c&lang=pt);
+    
+    if (response.ok) {
+      const weatherText = await response.text();
+      let temp = '--°C';
+      let desc = 'Clima';
+      
+      // Extrai temperatura
+      const tempMatch = weatherText.match(/[+-]?\d+°C/);
+      if (tempMatch) {
+        temp = tempMatch[0].replace('+', '');
+      }
+      
+      // Extrai descrição
+      const parts = weatherText.trim().split(' ');
+      if (parts[0] && parts[0] !== temp) {
+        desc = parts[0];
+      }
+      
+      tempSpan.textContent = temp;
+      descDiv.textContent = ${cidade} - ${desc};
+      iconImg.src = getWeatherIcon(desc);
+      
+      console.log('Clima obtido:', weatherText);
+      
+    } else {
+      throw new Error('API não disponível');
+    }
+    
+  } catch (error) {
+    console.log('Erro clima:', error.message);
+    useGenericWeather(cidade);
+  }
+}
+
+function formatCityName(cidade) {
+  const cityMap = {
+    'SAO PAULO': 'São Paulo',
+    'SANTOS': 'Santos',
+    'CAMPINAS': 'Campinas',
+    'RIBEIRAO PRETO': 'Ribeirão Preto',
+    'SOROCABA': 'Sorocaba',
+    'GUARUJA': 'Guarujá',
+    'PRAIA GRANDE': 'Praia Grande',
+    'ARACATUBA': 'Araçatuba',
+    'TAUBATE': 'Taubaté',
+    'SAO VICENTE': 'São Vicente',
+    'JUNDIAI': 'Jundiaí',
+    'VALINHOS': 'Valinhos',
+    'SAO JOSE DOS CAMPOS': 'São José dos Campos',
+    'ARARAQUARA': 'Araraquara',
+    'VINHEDO': 'Vinhedo',
+    'PRESIDENTE PRUDENTE': 'Presidente Prudente',
+    'ASSIS': 'Assis',
+    'SAO CARLOS': 'São Carlos',
+    'PERUIBE': 'Peruíbe',
+    'AVARE': 'Avaré',
+    'ATIBAIA': 'Atibaia',
+    'SAO SEBASTIAO': 'São Sebastião',
+    'BERTIOGA': 'Bertioga',
+    'ITANHAEM': 'Itanhaém',
+    'PIRACICABA': 'Piracicaba',
+    'SAO JOSE RIO PRETO': 'São José do Rio Preto',
+    'SAO JOSE DO RIO PRET': 'São José do Rio Preto',
+    'BAURU': 'Bauru',
+    'MARILIA': 'Marília',
+    'BOTUCATU': 'Botucatu',
+    'LIMEIRA': 'Limeira',
+    'LEME': 'Leme',
+    'BEBEDOURO': 'Bebedouro',
+    'ITU': 'Itu',
+    'SALTO': 'Salto',
+    'MONGAGUA': 'Mongaguá'
+  };
+  return cityMap[cidade.toUpperCase()] || cidade;
+}
+
+function useGenericWeather(cidade) {
+  const weatherDiv = document.getElementById('weather');
+  const tempSpan = document.getElementById('temp');
+  const descDiv = document.getElementById('weather-desc');
+  const emojiSpan = document.getElementById('weather-emoji');
+  
+  const agora = new Date();
+  const hora = agora.getHours();
+  let icon, desc, temp;
+  
+  // Ajuste por região (interior mais quente)
+  const isInterior = !['SAO PAULO', 'SANTOS', 'GUARUJA', 'PRAIA GRANDE', 'SAO VICENTE'].includes(cidade.toUpperCase());
+  const tempAdjust = isInterior ? 2 : 0;
+  
+  if (hora >= 6 && hora < 12) {
+    icon = '🌅'; desc = 'Manhã'; temp = ${18 + tempAdjust};
+  } else if (hora >= 12 && hora < 18) {
+    icon = '☀️'; desc = 'Tarde'; temp = ${26 + tempAdjust};
+  } else if (hora >= 18 && hora < 21) {
+    icon = '🌇'; desc = 'Entardecer'; temp = ${22 + tempAdjust};
+  } else {
+    icon = '🌙'; desc = 'Noite'; temp = ${18 + tempAdjust};
+  }
+  
+  tempSpan.textContent = ${temp}°C;
+  descDiv.textContent = ${cidade} • ${desc};
+  emojiSpan.textContent = icon;
+  weatherDiv.style.display = 'flex';
+  
+  console.log('Clima genérico aplicado:', cidade, temp + '°C');
+}
+
+function getWeatherIcon(description) {
+  // Usando ícones emoji que sempre funcionam
+  const iconMap = {
+    'Ensolarado': '☀️',
+    'Limpo': '☀️',
+    'Nublado': '☁️',
+    'Parcialmente': '⛅',
+    'Chuva': '🌧️',
+    'Chuvoso': '🌧️',
+    'Neve': '❄️',
+    'Névoa': '🌫️',
+    'Neblina': '🌫️',
+    'Tempestade': '⛈️',
+    'Manhã': '🌅',
+    'Tarde': '☀️',
+    'Entardecer': '🌇',
+    'Noite': '🌙'
+  };
+  
+  // Procura por palavras-chave na descrição
+  for (const [key, emoji] of Object.entries(iconMap)) {
+    if (description.toLowerCase().includes(key.toLowerCase())) {
+      return emoji;
+    }
+  }
+  
+  return '🌤️'; // ícone padrão
+}
+
+// Funções para o Clima
+async function updateWeatherForCity(cidade) {
+  const weatherDiv = document.getElementById('weather');
+  const tempSpan = document.getElementById('temp');
+  const descDiv = document.getElementById('weather-desc');
+  const emojiSpan = document.getElementById('weather-emoji');
+
+  try {
+    // Mostra carregando
+    tempSpan.textContent = '--°C';
+    descDiv.textContent = 'Carregando...';
+    emojiSpan.textContent = '🔄';
+    weatherDiv.style.display = 'flex';
+    
+    // Converte nome da cidade
+    const cidadeFormatada = formatCityName(cidade);
+    
+    // Usa API gratuita wttr.in
+    const response = await fetch(https://wttr.in/${encodeURIComponent(cidadeFormatada)}?format=%C+%t+%c&lang=pt);
+    
+    if (response.ok) {
+      const weatherText = await response.text();
+      let temp = '--°C';
+      let desc = 'Clima';
+      
+      // Extrai temperatura
+      const tempMatch = weatherText.match(/[+-]?\d+°C/);
+      if (tempMatch) {
+        temp = tempMatch[0].replace('+', '');
+      }
+      
+      // Extrai descrição
+      const parts = weatherText.trim().split(' ');
+      if (parts[0] && parts[0] !== temp) {
+        desc = parts[0];
+      }
+      
+      // Extrai emoji se houver
+      const emojiMatch = weatherText.match(/[\u{1F300}-\u{1F6FF}][\u{2600}-\u{26FF}]?/u);
+      let weatherEmoji = getWeatherIcon(desc);
+      if (emojiMatch) {
+        weatherEmoji = emojiMatch[0];
+      }
+      
+      tempSpan.textContent = temp;
+      descDiv.textContent = ${cidade} • ${desc};
+      emojiSpan.textContent = weatherEmoji;
+      
+      console.log('Clima obtido:', weatherText);
+      
+    } else {
+      throw new Error('API não disponível');
+    }
+    
+  } catch (error) {
+    console.log('Erro clima:', error.message);
+    useGenericWeather(cidade);
+  }
+}
+
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleString('pt-BR');
+}
+
+function fill() {
+  const codigo = document.getElementById('cod').value.trim().padStart(4, '0');
+  const nome = document.getElementById('nome');
+  const cid = document.getElementById('cid');
+  const trafficBtn = document.getElementById('traffic-btn');
+  
+  console.log('Preenchendo loja:', codigo);
+  
+  if (lojas[codigo]) {
+    console.log('Loja encontrada:', lojas[codigo]);
+    nome.value = lojas[codigo].nome;
+    cid.value = lojas[codigo].cidade;
+    trafficBtn.style.display = 'inline';
+    
+    // Atualiza clima da cidade
+    updateWeatherForCity(lojas[codigo].cidade);
+    
+  } else {
+    console.log('Loja não encontrada');
+    if (codigo && codigo !== '0000') {
+      nome.value = 'Loja não encontrada';
+      cid.value = '';
+      trafficBtn.style.display = 'none';
+      
+      // Mantém clima padrão
+      updateWeatherForCity('CAMPINAS');
+    } else {
+      nome.value = '';
+      cid.value = '';
+      trafficBtn.style.display = 'none';
+      
+      // Clima padrão quando vazio
+      updateWeatherForCity('CAMPINAS');
+    }
+  }
+}
+
+function abrirTransito() {
+  const cidade = document.getElementById('cid').value;
+  if (cidade) {
+    const url = https://www.google.com/maps/search/${encodeURIComponent(cidade)}+trânsito;
+    window.open(url, '_blank');
+  }
+}
+
+let checklistAberto = false;
+function toggle() {
+  console.log('Toggle checklist:', checklistAberto);
+  const checklist = document.getElementById('checklistItems');
+  checklistAberto = !checklistAberto;
+  
+  if (checklistAberto) {
+    checklist.style.maxHeight = '200px';
+  } else {
+    checklist.style.maxHeight = '0px';
+  }
+}
+
+let metricsAberto = false;
+function toggleMetricas() {
+  console.log('Toggle métricas:', metricsAberto);
+  const metricas = document.getElementById('metricasSec');
+  metricsAberto = !metricsAberto;
+  
+  if (metricsAberto) {
+    metricas.style.maxHeight = '300px';
+  } else {
+    metricas.style.maxHeight = '0px';
+  }
+}
+
+function add() {
+  const novoItem = document.getElementById('novo');
+  if (novoItem.value.trim() !== '') {
+    const div = document.createElement('label');
+    div.innerHTML = <input type="checkbox" value="${novoItem.value}" onchange="badge()"> ${novoItem.value};
+    document.getElementById('lista').appendChild(div);
+    novoItem.value = '';
+    badge();
+  }
+}
+
+function badge() {
+  const checked = document.querySelectorAll('#lista input:checked').length;
+  document.getElementById('badge').textContent = (${checked});
+}
+
+function formatCurrency(input) {
+  let value = input.value.replace(/\D/g, ''); 
+  if (value) {
+    value = parseInt(value, 10);
+    const formattedValue = (value / 100).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    input.value = formattedValue;
+  } else {
+    input.value = '';
+  }
+  updateMetrics();
+}
+
+function updateMetrics() {
+  const venda = parseFloat(document.getElementById('vendaMensal').value.replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+  const variacao = parseFloat(document.getElementById('variacaoVnd').value) || 0;
+  const perda = parseFloat(document.getElementById('perdaLoja').value.replace('R$', '').replace(/\./g, '').replace(',', '.')) || 0;
+  const ruptura = parseFloat(document.getElementById('ruptura').value) || 0;
+
+  const pieChart = document.getElementById('pieChart');
+  const totalVendaDisplay = document.getElementById('totalVenda');
+  
+  totalVendaDisplay.textContent = 'R$ ' + venda.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  
+  let perdaPercent = 0;
+  if (venda > 0) {
+    perdaPercent = (perda / venda) * 100;
+  }
+  
+  const rupturaPercent = ruptura;
+  const perdaEnd = perdaPercent;
+  const rupturaEnd = perdaEnd + rupturaPercent;
+  
+  const gradient = `conic-gradient(
+    #f44336 0% ${perdaEnd}%,
+    #ff9800 ${perdaEnd}% ${rupturaEnd}%,
+    #e0e0e0 ${rupturaEnd}% 100%
+  )`;
+  
+  pieChart.style.background = gradient;
+  updateMetricsBadge();
+}
+
+function updateMetricsBadge() {
+  const filledCount = Array.from(document.querySelectorAll('#metricasSec input')).filter(input => {
+    const cleanValue = input.value.replace(/[^0-9]/g, '');
+    return cleanValue !== '';
+  }).length;
+  document.getElementById('metrics-badge').textContent = (${filledCount});
+}
+
+function abrirCamera() {
+  const input = document.getElementById('fotos');
+  input.click();
+}
+
+function send() {
+  const btn = document.querySelector('.finalizar');
+  const statusDiv = document.getElementById('status');
+  
+  if (btn.disabled) return;
+  
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  btn.style.background = '#666';
+  statusDiv.textContent = '📤 Enviando...';
+  statusDiv.style.color = '#007bff';
+  
+  setTimeout(() => {
+    statusDiv.textContent = '✅ Enviado com sucesso!';
+    statusDiv.style.color = 'var(--verde)';
+    
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = 'Finalizar';
+      btn.style.background = 'var(--verde)';
+      statusDiv.textContent = '';
+    }, 3000);
+  }, 1500);
+}
+
+function limparFormulario() {
+  document.getElementById('f').reset();
+  document.getElementById('nome').value = '';
+  document.getElementById('cid').value = '';
+  document.getElementById('traffic-btn').style.display = 'none';
+  document.getElementById('badge').textContent = '(0)';
+  document.getElementById('metrics-badge').textContent = '(0)';
+  document.getElementById('checklistItems').style.maxHeight = '0';
+  document.getElementById('metricasSec').style.maxHeight = '0';
+  document.getElementById('pieChart').style.background = 'conic-gradient(transparent 0%)';
+  document.getElementById('totalVenda').textContent = 'R$ 0,00';
+  checklistAberto = false;
+  metricsAberto = false;
+  console.log('Formulário limpo');
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+  setInterval(updateClock, 1000);
+  updateClock();
+  
+  // Inicia com clima de Campinas
+  updateWeatherForCity('CAMPINAS');
+  
+  console.log('Sistema iniciado com', Object.keys(lojas).length, 'lojas');
+});
+</script>
+</body>
+</html> 
