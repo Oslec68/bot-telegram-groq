@@ -73,7 +73,7 @@
         
         .progress-section {
             display: flex;
-            flex-direction: column;m
+            flex-direction: column;
             align-items: center;
             margin-bottom: 20px;
         }
@@ -185,6 +185,56 @@
         
         .undo-btn:hover {
             background: #E74C3C !important;
+        }
+        
+        .chart-section {
+            background: #112443;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            min-height: 80px;
+            max-height: 120px;
+            overflow: hidden;
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: #55B5FF;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 60px;
+            background: #081C3C;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .chart svg {
+            width: 100%;
+            height: 60px;
+        }
+        
+        .chart-hours {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #A0AEC0;
+            padding: 0 8px;
+        }
+        
+        .feedback {
+            background: #112D4E;
+            border-radius: 8px;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9rem;
+            color: #55B5FF;
+            font-weight: 500;
+            margin-bottom: 10px;
+            line-height: 1.3;
         }
         
         .info-card {
@@ -314,6 +364,13 @@
             display: flex;
             justify-content: space-between;
         }
+        
+        .history-list {
+            text-align: left;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -359,6 +416,32 @@
                 <button onclick="addCustom()">Add</button>
                 <button onclick="undoLast()" class="undo-btn">Desf</button>
             </div>
+            
+            <div class="chart-section">
+                <div class="chart-title">Histórico por hora</div>
+                <div class="chart">
+                    <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2ED5FC;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#2ED5FC;stop-opacity:0.2" />
+                            </linearGradient>
+                        </defs>
+                        <polyline id="chartLine" fill="none" stroke="#2ED5FC" stroke-width="3" 
+                                points="0,50 75,45 150,40 225,30 300,20"/>
+                        <polygon id="chartFill" fill="url(#chartGradient)"
+                                points="0,60 0,50 75,45 150,40 225,30 300,20 300,60"/>
+                    </svg>
+                </div>
+                <div class="chart-hours">
+                    <span>6</span>
+                    <span>12</span>
+                    <span>18</span>
+                    <span>24</span>
+                </div>
+            </div>
+            
+            <div class="feedback" id="feedback">Comece sua jornada de hidratação!</div>
         </div>
 
         <!-- Seção Histórico -->
@@ -366,8 +449,11 @@
             <div class="info-card">
                 <h3>📊 Histórico Detalhado</h3>
                 <p>Acompanhe todos os seus registros de hidratação do dia.</p>
-                <div id="historyList">
-                    <p style="color: #A0AEC0;">Nenhum registro ainda hoje.</p>
+                <div class="history-list" id="historyList">
+                    <div style="background: #112443; padding: 15px; border-radius: 8px; text-align: center; color: #A0AEC0;">
+                        🕒 Histórico vazio<br>
+                        <small>Adicione água para ver registros aqui</small>
+                    </div>
                 </div>
             </div>
         </div>
@@ -489,7 +575,10 @@
                 time: now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0')
             });
             
+            console.log('Histórico atual:', waterHistory); // Debug
+            
             updateDisplay();
+            updateChart();
             updateHistory();
             updatePrizes();
         }
@@ -530,32 +619,61 @@
             document.getElementById('progressCircle').style.strokeDashoffset = offset;
             document.getElementById('progressText').innerHTML = 
                 `${Math.round(percentage)}%<br><span style="font-size:0.8rem; color: #55B5FF;">da meta</span>`;
+            
+            updateFeedback(percentage);
         }
 
         function updateHistory() {
             const historyList = document.getElementById('historyList');
             
+            // Limpar primeiro
+            historyList.innerHTML = '';
+            
             if (waterHistory.length === 0) {
-                historyList.innerHTML = '<p style="color: #A0AEC0;">Nenhum registro ainda hoje.</p>';
+                historyList.innerHTML = `
+                    <div style="background: #112443; padding: 20px; border-radius: 8px; text-align: center; color: #A0AEC0;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🕒</div>
+                        <h4 style="color: #55B5FF; margin-bottom: 5px;">Histórico Vazio</h4>
+                        <p>Adicione água para ver seus registros aqui!</p>
+                    </div>
+                `;
             } else {
-                let html = '';
-                waterHistory.slice(-10).reverse().forEach((entry) => {
+                let html = '<h4 style="color: #55B5FF; margin-bottom: 15px;">📋 Seus Registros:</h4>';
+                
+                waterHistory.forEach((entry, index) => {
                     html += `
-                        <div class="history-item">
-                            <span>${entry.time}</span>
-                            <span style="color: #55B5FF; font-weight: bold;">${entry.amount}ml</span>
+                        <div style="background: #112D4E; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #A0AEC0;">🕐 ${entry.time}</span>
+                            <span style="color: #55B5FF; font-weight: bold; font-size: 1.1rem;">💧 ${entry.amount}ml</span>
                         </div>
                     `;
                 });
                 
                 html += `
-                    <div style="background: #112443; padding: 10px; margin-top: 10px; border-radius: 6px; text-align: center;">
-                        <strong style="color: #55B5FF;">Total: ${totalWater}ml</strong><br>
-                        <small style="color: #A0AEC0;">${Math.round((totalWater/dailyGoal)*100)}% da meta</small>
+                    <div style="background: #40A9FF; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center; color: white;">
+                        <div style="font-size: 1.2rem; font-weight: bold;">Total: ${totalWater}ml</div>
+                        <div style="opacity: 0.9;">${Math.round((totalWater/dailyGoal)*100)}% da meta de ${dailyGoal}ml</div>
                     </div>
                 `;
                 
                 historyList.innerHTML = html;
+            }
+        }
+
+        function undoLast() {
+            if (lastAmount > 0) {
+                totalWater -= lastAmount;
+                if (totalWater < 0) totalWater = 0;
+                
+                if (waterHistory.length > 0) {
+                    waterHistory.pop();
+                }
+                
+                lastAmount = 0;
+                updateDisplay();
+                updateChart();
+                updateHistory();
+                updatePrizes();
             }
         }
 
@@ -593,6 +711,9 @@
         }
 
         function showSection(sectionName, element) {
+            // Debug para ver se está funcionando
+            console.log('Mudando para seção:', sectionName);
+            
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
@@ -603,6 +724,11 @@
             
             document.getElementById(sectionName).classList.add('active');
             element.classList.add('active');
+            
+            // Se for histórico, atualizar na hora
+            if (sectionName === 'historico') {
+                updateHistory();
+            }
         }
 
         function updateTime() {
@@ -621,6 +747,7 @@
 
         // Inicializar
         updateDisplay();
+        updateChart();
         updateHistory();
         updatePrizes();
         updateTime();
