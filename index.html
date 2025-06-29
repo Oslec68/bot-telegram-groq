@@ -355,28 +355,12 @@
             border-radius: 4px 4px 0 0;
             position: relative;
         }
-        
-        .history-item {
-            background: #112D4E;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .history-list {
-            text-align: left;
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <span id="timeDisplay">Lindóya - 22°C 19:36</span>
+            <span id="timeDisplay">Lindóya - 22°C 21:15</span>
             <span>🔋 📶</span>
         </div>
         
@@ -427,10 +411,8 @@
                                 <stop offset="100%" style="stop-color:#2ED5FC;stop-opacity:0.2" />
                             </linearGradient>
                         </defs>
-                        <polyline id="chartLine" fill="none" stroke="#2ED5FC" stroke-width="3" 
-                                points="0,50 75,45 150,40 225,30 300,20"/>
-                        <polygon id="chartFill" fill="url(#chartGradient)"
-                                points="0,60 0,50 75,45 150,40 225,30 300,20 300,60"/>
+                        <polyline id="chartLine" fill="none" stroke="#2ED5FC" stroke-width="3" points="0,50"/>
+                        <polygon id="chartFill" fill="url(#chartGradient)" points="0,60 0,50"/>
                     </svg>
                 </div>
                 <div class="chart-hours">
@@ -568,15 +550,11 @@
         function addWater(amount) {
             lastAmount = amount;
             totalWater += amount;
-            
             const now = new Date();
             waterHistory.push({
                 amount: amount,
                 time: now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0')
             });
-            
-            console.log('Histórico atual:', waterHistory); // Debug
-            
             updateDisplay();
             updateChart();
             updateHistory();
@@ -586,7 +564,6 @@
         function addCustom() {
             const input = document.getElementById('customAmount');
             const amount = parseInt(input.value);
-            
             if (amount > 0 && amount <= 2000) {
                 addWater(amount);
                 input.value = '';
@@ -599,13 +576,10 @@
             if (lastAmount > 0) {
                 totalWater -= lastAmount;
                 if (totalWater < 0) totalWater = 0;
-                
-                if (waterHistory.length > 0) {
-                    waterHistory.pop();
-                }
-                
+                if (waterHistory.length > 0) waterHistory.pop();
                 lastAmount = 0;
                 updateDisplay();
+                updateChart();
                 updateHistory();
                 updatePrizes();
             }
@@ -615,20 +589,14 @@
             const percentage = Math.min((totalWater / dailyGoal) * 100, 100);
             const circumference = 2 * Math.PI * 60;
             const offset = circumference - (circumference * percentage / 100);
-            
             document.getElementById('progressCircle').style.strokeDashoffset = offset;
-            document.getElementById('progressText').innerHTML = 
-                `${Math.round(percentage)}%<br><span style="font-size:0.8rem; color: #55B5FF;">da meta</span>`;
-            
+            document.getElementById('progressText').innerHTML = `${Math.round(percentage)}%<br><span style="font-size:0.8rem; color: #55B5FF;">da meta</span>`;
             updateFeedback(percentage);
         }
 
         function updateHistory() {
             const historyList = document.getElementById('historyList');
-            
-            // Limpar primeiro
             historyList.innerHTML = '';
-            
             if (waterHistory.length === 0) {
                 historyList.innerHTML = `
                     <div style="background: #112443; padding: 20px; border-radius: 8px; text-align: center; color: #A0AEC0;">
@@ -639,8 +607,7 @@
                 `;
             } else {
                 let html = '<h4 style="color: #55B5FF; margin-bottom: 15px;">📋 Seus Registros:</h4>';
-                
-                waterHistory.forEach((entry, index) => {
+                waterHistory.forEach((entry) => {
                     html += `
                         <div style="background: #112D4E; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: #A0AEC0;">🕐 ${entry.time}</span>
@@ -648,33 +615,35 @@
                         </div>
                     `;
                 });
-                
                 html += `
                     <div style="background: #40A9FF; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center; color: white;">
                         <div style="font-size: 1.2rem; font-weight: bold;">Total: ${totalWater}ml</div>
                         <div style="opacity: 0.9;">${Math.round((totalWater/dailyGoal)*100)}% da meta de ${dailyGoal}ml</div>
                     </div>
                 `;
-                
                 historyList.innerHTML = html;
             }
         }
 
-        function undoLast() {
-            if (lastAmount > 0) {
-                totalWater -= lastAmount;
-                if (totalWater < 0) totalWater = 0;
-                
-                if (waterHistory.length > 0) {
-                    waterHistory.pop();
-                }
-                
-                lastAmount = 0;
-                updateDisplay();
-                updateChart();
-                updateHistory();
-                updatePrizes();
-            }
+        function updateChart() {
+            const svgLine = document.getElementById('chartLine');
+            const svgFill = document.getElementById('chartFill');
+            const points = waterHistory.map((entry, index) => {
+                const hour = parseInt(entry.time.split(':')[0]);
+                const value = (totalWater / dailyGoal) * 50; // Ajuste proporcional
+                return `${index * 75}, ${50 - value}`;
+            }).join(' ');
+            svgLine.setAttribute('points', `0,50 ${points} 300,50`);
+            svgFill.setAttribute('points', `0,60 0,50 ${points} 300,50 300,60`);
+        }
+
+        function updateFeedback(percentage) {
+            const feedback = document.getElementById('feedback');
+            if (percentage < 25) feedback.textContent = 'Comece sua jornada de hidratação!';
+            else if (percentage < 50) feedback.textContent = 'Bom começo! Continue!';
+            else if (percentage < 75) feedback.textContent = 'Quase lá! Mantenha o ritmo!';
+            else if (percentage < 100) feedback.textContent = 'Ótimo trabalho! Finalize sua meta!';
+            else feedback.textContent = 'Parabéns! Meta atingida!';
         }
 
         function updatePrizes() {
@@ -701,34 +670,17 @@
 
         function setReminder(minutes) {
             reminderInterval = minutes;
-            
-            document.querySelectorAll('.reminder-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
+            document.querySelectorAll('.reminder-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`r${minutes}`).classList.add('active');
             document.getElementById('reminderStatus').textContent = `Lembretes a cada ${minutes} minutos`;
         }
 
         function showSection(sectionName, element) {
-            // Debug para ver se está funcionando
-            console.log('Mudando para seção:', sectionName);
-            
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             document.getElementById(sectionName).classList.add('active');
             element.classList.add('active');
-            
-            // Se for histórico, atualizar na hora
-            if (sectionName === 'historico') {
-                updateHistory();
-            }
+            if (sectionName === 'historico') updateHistory();
         }
 
         function updateTime() {
@@ -738,20 +690,17 @@
             document.getElementById('timeDisplay').textContent = `Lindóya - 22°C ${hours}:${minutes}`;
         }
 
-        // Enter no input
         document.getElementById('customAmount').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addCustom();
-            }
+            if (e.key === 'Enter') addCustom();
         });
 
-        // Inicializar
+        // Inicialização
         updateDisplay();
         updateChart();
         updateHistory();
         updatePrizes();
         updateTime();
-        setInterval(updateTime, 60000);
+        setInterval(updateTime, 60000); // Atualiza a cada minuto
     </script>
 </body>
 </html>
